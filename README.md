@@ -45,7 +45,7 @@ It's pretty meaningless to explain lift by stating that faster moving air has lo
 
 Sibley's description may be derived from, say, Bernoulli's experiments.  But it has lost the meaning of the original.
 
-It seems more useful to think in terms of particles being forced out of the way by a wing, and to think about how they are deflected in aggregate - about the resulting reactive forces on the surfaces of a wing.
+It seems more useful to ***think in terms of particles being forced out of the way by a wing and*** to think about how they are deflected in aggregate - about the resulting ***reactive forces*** on the surfaces of a wing.
 
 ![Pressure Distribution](Docs/images/pressure_distribution.JPG)
 
