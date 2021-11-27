@@ -1,0 +1,11 @@
+# Following this like a mindless mimic:
+# https://bskinn.github.io/My-How-Why-Pyproject-Src/
+
+[build-system]
+requires = ["wheel", "setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 79
+
+
