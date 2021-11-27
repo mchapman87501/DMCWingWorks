@@ -6,6 +6,7 @@
 //
 
 import XCTest
+
 @testable import DMCWingWorks
 
 class WorldTests: XCTestCase {
@@ -20,8 +21,10 @@ class WorldTests: XCTestCase {
 
     func testWorldIterate() throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 5.0, alphaRad: 0.0)
-        let world = World(airfoil: foil, width: 10.0, height: 7.0, maxParticleSpeed: 0.01, windSpeed: 0.0)
-        
+        let world = World(
+            airfoil: foil, width: 10.0, height: 7.0, maxParticleSpeed: 0.01,
+            windSpeed: 0.0)
+
         XCTAssertTrue(world.air.count > 0)
         for _ in 0..<3 {
             world.step()
@@ -32,11 +35,11 @@ class WorldTests: XCTestCase {
         XCTAssertTrue(world.netForceOnFoil.value().magSqr() > 0.0)
     }
 
-//    func testPerformanceExample() throws {
-//        // This is an example of a performance test case.
-//        self.measure {
-//            // Put the code you want to measure the time of here.
-//        }
-//    }
+    //    func testPerformanceExample() throws {
+    //        // This is an example of a performance test case.
+    //        self.measure {
+    //            // Put the code you want to measure the time of here.
+    //        }
+    //    }
 
 }

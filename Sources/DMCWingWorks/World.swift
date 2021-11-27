@@ -3,14 +3,20 @@ import GameplayKit
 
 private let concurrency = ProcessInfo.processInfo.activeProcessorCount * 3
 
-private func getUsableWorldArea(worldWidth width: Double, worldHeight height: Double, airfoil: AirFoil) -> Double {
+private func getUsableWorldArea(
+    worldWidth width: Double, worldHeight height: Double, airfoil: AirFoil
+) -> Double {
     let foilBB = airfoil.shape.bbox
     let foilApproxArea = Double(foilBB.width * foilBB.height)
     return (width * height) - foilApproxArea
 }
 
-private func getWorldDensity(worldWidth width: Double, worldHeight height: Double, airfoil: AirFoil, numParticles: Int) -> Double {
-    let area = getUsableWorldArea(worldWidth: width, worldHeight: height, airfoil: airfoil)
+private func getWorldDensity(
+    worldWidth width: Double, worldHeight height: Double, airfoil: AirFoil,
+    numParticles: Int
+) -> Double {
+    let area = getUsableWorldArea(
+        worldWidth: width, worldHeight: height, airfoil: airfoil)
     return Double(numParticles) / area
 }
 
@@ -18,8 +24,10 @@ class GaussRandom {
     static let gaussianSrc = GKRandomSource()
     // GameKit randoms seem to be oriented toward returning integer values.
     // Try to generate random values in 0.0 ... 1.0.
-    static let gaussianDistro = GKGaussianDistribution(randomSource: gaussianSrc, lowestValue: -1000000000, highestValue: 1000000000)
-    
+    static let gaussianDistro = GKGaussianDistribution(
+        randomSource: gaussianSrc, lowestValue: -1_000_000_000,
+        highestValue: 1_000_000_000)
+
     public static func rand() -> Double {
         let rval = Double(gaussianDistro.nextInt()) / 2_000_000_000.0
         return rval
@@ -40,12 +48,17 @@ struct Recycler {
             randomizeOne(particle: p)
         }
     }
-    
+
     private func randomizeOne(particle: Particle) {
-        randomizeOne(particle: particle, xMin: 0.0, yMin: 0.0, xMax: worldWidth, yMax: worldHeight)
+        randomizeOne(
+            particle: particle, xMin: 0.0, yMin: 0.0, xMax: worldWidth,
+            yMax: worldHeight)
     }
-    
-    private func randomizeOne(particle: Particle, xMin: Double, yMin: Double, xMax: Double, yMax: Double) {
+
+    private func randomizeOne(
+        particle: Particle, xMin: Double, yMin: Double, xMax: Double,
+        yMax: Double
+    ) {
         var x = Double.random(in: (xMin...xMax))
         var y = Double.random(in: (yMin...yMax))
         while airfoil.shape.contains(x: x, y: y) {
@@ -56,7 +69,7 @@ struct Recycler {
         particle.reset(s: s, v: randomParticleVelocity())
 
     }
-    
+
     private func randomParticleVelocity() -> Vector {
         let vWind = Vector(x: windSpeed, y: 0.0)
         // TODO *total* vector magnitude should not exceed maxParticleSpeed.
@@ -67,7 +80,7 @@ struct Recycler {
         return vRandom.adding(vWind)
 
     }
-    
+
     /// Recycle particles that have left the "stage", i.e., moved out of world bounds.
     public func recycle(particles: [Particle]) {
         let offstageParticles = particles.filter { isOutOfWorld(particle: $0) }
@@ -75,15 +88,15 @@ struct Recycler {
             recycleOne(particle: particle)
         }
     }
-    
+
     private func recycleOne(particle: Particle) {
         // I have no idea how to recycle given an environment in which the
         // max (random) particle speed is an order of magnitude greater than
         // the wind speed.
-        
+
         let xOld = particle.s.x
         let yOld = particle.s.y
-        
+
         func randWrap(_ vIn: Double, _ vMin: Double, _ vMax: Double) -> Double {
             let span = vMax - vMin
             var v = vIn
@@ -95,7 +108,7 @@ struct Recycler {
             }
             return v
         }
-        
+
         if (0 > yOld) || (yOld > worldHeight) {
             // I give up: treat world y extrema as wind tunnel walls.
             let vNew = Vector(x: particle.v.x, y: -particle.v.y)
@@ -105,7 +118,7 @@ struct Recycler {
 
         var x = randWrap(xOld, 0.0, worldWidth)
         var y = yOld
-        
+
         while airfoil.shape.contains(x: x, y: y) {
             x = Double.random(in: (0...worldWidth))
             y = Double.random(in: (0...worldHeight))
@@ -113,15 +126,17 @@ struct Recycler {
         let s = Vector(x: x, y: y)
         particle.reset(s: s, v: randomParticleVelocity())
     }
-    
+
     private func estimatedDensity(of particles: [Particle]) -> Double {
-        return getWorldDensity(worldWidth: worldWidth, worldHeight: worldHeight, airfoil: airfoil, numParticles: particles.count)
+        return getWorldDensity(
+            worldWidth: worldWidth, worldHeight: worldHeight, airfoil: airfoil,
+            numParticles: particles.count)
     }
-    
+
     private func isOutOfWorld(particle: Particle) -> Bool {
         return isOutOfWorld(x: particle.s.x, y: particle.s.y)
     }
-    
+
     private func isOutOfWorld(x: Double, y: Double) -> Bool {
         return ((x < 0.0) || (y < 0.0) || (x > worldWidth) || (y > worldHeight))
     }
@@ -139,26 +154,31 @@ public class World {
     public private(set) var air: [Particle]
     var netForceOnFoil: SlidingWindowVector
     var edgeNormalForces: [SlidingWindowVector]
-    
+
     private let cells: WorldCells
-    
+
     let recycler: Recycler
     let foilCollider: AirFoilCollision
 
-    private let queue = DispatchQueue(label: "UpdateQueue", qos: .utility, attributes: .concurrent)
+    private let queue = DispatchQueue(
+        label: "UpdateQueue", qos: .utility, attributes: .concurrent)
 
-    public init(airfoil foilIn: AirFoil, width: Double, height: Double, maxParticleSpeed: Double, windSpeed: Double) {
+    public init(
+        airfoil foilIn: AirFoil, width: Double, height: Double,
+        maxParticleSpeed: Double, windSpeed: Double
+    ) {
         airfoil = foilIn
         worldWidth = width
         worldHeight = height
         maxPartSpeed = maxParticleSpeed
         self.windSpeed = windSpeed
 
-        let netWorldArea = getUsableWorldArea(worldWidth: width, worldHeight: height, airfoil: foilIn)
+        let netWorldArea = getUsableWorldArea(
+            worldWidth: width, worldHeight: height, airfoil: foilIn)
 
         let densityFudgeFactor = 3.0
         let diameter = 2.0 * Particle.commonRadius
-        
+
         numParticles = Int(
             densityFudgeFactor * netWorldArea / (diameter * diameter))
 
@@ -178,13 +198,18 @@ public class World {
         recycler = cycler
         foilCollider = AirFoilCollision(foil: foilIn)
         netForceOnFoil = SlidingWindowVector()
-        edgeNormalForces = [SlidingWindowVector](repeating: SlidingWindowVector(), count: foilIn.shape.edges.count)
-        
-        cells = WorldCells(worldWidth: worldWidth, worldHeight: worldHeight, cellExtent: 2.0 * Particle.commonRadius, particles: air)
+        edgeNormalForces = [SlidingWindowVector](
+            repeating: SlidingWindowVector(), count: foilIn.shape.edges.count)
+
+        cells = WorldCells(
+            worldWidth: worldWidth, worldHeight: worldHeight,
+            cellExtent: 2.0 * Particle.commonRadius, particles: air)
     }
 
     /// Collide particle with all particles in group.  Caller must ensure that part0 is not in group.
-    private func collideParticleWithGroup(part0: Particle, cells: WorldCells, x: Int, y: Int) {
+    private func collideParticleWithGroup(
+        part0: Particle, cells: WorldCells, x: Int, y: Int
+    ) {
         let (iStart, iEnd) = cells.cellStartEndIndices(x: x, y: y)
         if iStart < 0 {
             // This cell is empty.
@@ -199,7 +224,7 @@ public class World {
             }
         }
     }
-    
+
     /**
      * Resolve collisions involving all particles in cell [x, y].
      */
@@ -224,10 +249,11 @@ public class World {
                     part0.collide(with: part1)
                 }
             }
-            
+
             for (groupX, groupY) in [(x, y + 1), (x + 1, y), (x + 1, y + 1)] {
                 if (groupX < cells.numH) && (groupY < cells.numV) {
-                    collideParticleWithGroup(part0: part0, cells: cells, x: groupX, y: groupY)
+                    collideParticleWithGroup(
+                        part0: part0, cells: cells, x: groupX, y: groupY)
                 }
             }
         }
@@ -238,7 +264,7 @@ public class World {
         // Make local copies of state that is needed inside async blocks:
         let cells = self.cells
         let collideGroup = self.collideGroup
-        
+
         let yMax = cells.numV
         let xMax = cells.numH
         let chunkSize = max(1, yMax / concurrency)
@@ -285,10 +311,10 @@ public class World {
 }
 
 // Airfoil-particle collision processing:
-public extension World {
-    func forceOnFoil() -> Vector { return netForceOnFoil.value() }
+extension World {
+    public func forceOnFoil() -> Vector { return netForceOnFoil.value() }
 
-    func foilEdgeForces() -> [Vector] {
+    public func foilEdgeForces() -> [Vector] {
         return edgeNormalForces.map { $0.value() }
     }
 
@@ -301,7 +327,9 @@ public extension World {
         }
     }
 
-    private func calcFoilCollisions() -> (netForce: Vector, edgeForces: [Vector]) {
+    private func calcFoilCollisions() -> (
+        netForce: Vector, edgeForces: [Vector]
+    ) {
         var netForce = Vector()
         let numEdges = airfoil.shape.edges.count
         var edgeForces = [Vector](repeating: Vector(), count: numEdges)
@@ -317,13 +345,15 @@ public extension World {
                 let iNext = i + chunkSize
                 let jMax = (iNext < iMax) ? iNext : iMax
                 var chunkForce = Vector()
-                var chunkEdgeForces = [Vector](repeating: Vector(), count: numEdges)
+                var chunkEdgeForces = [Vector](
+                    repeating: Vector(), count: numEdges)
                 for j in i..<jMax {
                     let collResult = collide(air[j])
                     if let impulseVec = collResult.force {
                         chunkForce = chunkForce.adding(impulseVec)
                         if let iEdge = collResult.edgeIndex {
-                            chunkEdgeForces[iEdge] = chunkEdgeForces[iEdge].adding(impulseVec)
+                            chunkEdgeForces[iEdge] = chunkEdgeForces[iEdge]
+                                .adding(impulseVec)
                         }
                     }
                 }
@@ -339,7 +369,7 @@ public extension World {
         return (netForce, edgeForces)
     }
 
-    func netMomentum() -> Double {
+    public func netMomentum() -> Double {
         return air.reduce(0.0) { partial, curr in
             partial + curr.momentum()
         }

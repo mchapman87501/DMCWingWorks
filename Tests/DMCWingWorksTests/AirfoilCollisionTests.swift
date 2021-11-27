@@ -6,6 +6,7 @@
 //
 
 import XCTest
+
 @testable import DMCWingWorks
 
 class AirfoilCollisionTests: XCTestCase {
@@ -17,9 +18,9 @@ class AirfoilCollisionTests: XCTestCase {
         let vUnit0 = vel.unit()
         let angle0 = atan2(vUnit0.y, vUnit0.x)
         let particle = Particle(s: pos, v: vel)
-        
+
         let collider = AirFoilCollision(foil: foil)
-        
+
         XCTAssertTrue(foil.shape.contains(point: CGPoint(particle.s)))
         let (edgeIndex, force) = collider.collide(particle: particle)
         XCTAssertNotNil(edgeIndex)
@@ -29,13 +30,13 @@ class AirfoilCollisionTests: XCTestCase {
         let anglef = atan2(vUnitf.y, vUnitf.x)
         XCTAssertNotEqual(angle0, anglef)
     }
-    
+
     func vectorStr(_ v: Vector) -> String {
         let x = String(format: "%.3f", v.x)
         let y = String(format: "%.3f", v.y)
         return "[\(x), \(y)]"
     }
-    
+
     func testCollideVertex(index i: Int) throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 100.0, alphaRad: 0.0)
         let collider = AirFoilCollision(foil: foil)
@@ -54,12 +55,16 @@ class AirfoilCollisionTests: XCTestCase {
         let (_, force) = collider.collide(particle: particle)
 
         XCTAssertNotNil(force)
-        XCTAssertFalse(foil.shape.contains(point: CGPoint(particle.s)), "Collide vertex \(i): particle ended inside foil: \(vectorStr(pos)) -> \(vectorStr(particle.s))")
-        
+        XCTAssertFalse(
+            foil.shape.contains(point: CGPoint(particle.s)),
+            "Collide vertex \(i): particle ended inside foil: \(vectorStr(pos)) -> \(vectorStr(particle.s))"
+        )
+
         if let force = force, force.magnitude() > 0.0 {
             let vUnitf = particle.v.unit()
             let anglef = atan2(vUnitf.y, vUnitf.x)
-            let angleMsg = "Collide vertex \(i): no Δ angle: \(vectorStr(pos)), \(vectorStr(vel)) -> \(vectorStr(particle.s)), \(vectorStr(particle.v))"
+            let angleMsg =
+                "Collide vertex \(i): no Δ angle: \(vectorStr(pos)), \(vectorStr(vel)) -> \(vectorStr(particle.s)), \(vectorStr(particle.v))"
             XCTAssertNotEqual(angle0, anglef, angleMsg)
         }
     }
@@ -69,7 +74,7 @@ class AirfoilCollisionTests: XCTestCase {
             try testCollideVertex(index: i)
         }
     }
-    
+
     func testCollideMidEdge(edgeIndex: Int) throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 100.0, alphaRad: 0.0)
         let collider = AirFoilCollision(foil: foil)
@@ -79,9 +84,10 @@ class AirfoilCollisionTests: XCTestCase {
         let xmid = Double(edge.p0.x + edge.pf.x) / 2.0
         let ymid = Double(edge.p0.y + edge.pf.y) / 2.0
         let pos = Vector(x: xmid, y: ymid)
-        
+
         // Ensure the velocity vector points into the edge.
-        let vel = Vector(x: 0.1, y: 0.0).adding(foil.shape.edgeNormals[edgeIndex].scaled(-0.01))
+        let vel = Vector(x: 0.1, y: 0.0).adding(
+            foil.shape.edgeNormals[edgeIndex].scaled(-0.01))
         let particle = Particle(s: pos, v: vel)
 
         let vUnit0 = vel.unit()
@@ -94,11 +100,16 @@ class AirfoilCollisionTests: XCTestCase {
         if let force = force {
             print("Collision force: \(force)")
         }
-        XCTAssertFalse(foil.shape.contains(point: CGPoint(particle.s)), "Edge \(edgeIndex): particle moved inside foil: \(pos) -> \(particle.s)")
+        XCTAssertFalse(
+            foil.shape.contains(point: CGPoint(particle.s)),
+            "Edge \(edgeIndex): particle moved inside foil: \(pos) -> \(particle.s)"
+        )
         let vUnitf = particle.v.unit()
         let anglef = atan2(vUnitf.y, vUnitf.x)
-        let edgeStr = "Edge \(edgeIndex), \(vectorStr(Vector(edge.p0)))-\(vectorStr(Vector(edge.pf)))"
-        let assertMsg = "\(edgeStr): no Δ angle: S: \(vectorStr(pos)), V: \(vectorStr(vel)) -> S: \(vectorStr(particle.s)), V: \(vectorStr(particle.v))"
+        let edgeStr =
+            "Edge \(edgeIndex), \(vectorStr(Vector(edge.p0)))-\(vectorStr(Vector(edge.pf)))"
+        let assertMsg =
+            "\(edgeStr): no Δ angle: S: \(vectorStr(pos)), V: \(vectorStr(vel)) -> S: \(vectorStr(particle.s)), V: \(vectorStr(particle.v))"
         XCTAssertNotEqual(angle0, anglef, assertMsg)
     }
 
@@ -119,10 +130,10 @@ class AirfoilCollisionTests: XCTestCase {
     // In simulations, the trailing top surface of the foil sometimes
     // recorded net negative normal force.  Two causes were found, as embodied
     // in these tests.
-    
+
     // 1) Airfoil collision resolution sometimes completed with a particle
     // still inside the airfoil.
-    
+
     func exampleFoilShape() -> DMCWingWorks.Polygon {
         let vertexCoords: [(Double, Double)] = [
             (21.61566625583794, 30.582579917106106),
@@ -169,21 +180,22 @@ class AirfoilCollisionTests: XCTestCase {
         let pos0 = Vector(x: 23.25846245734957, y: 30.378718758110857)
         let vel0 = Vector(x: 3.0, y: 0.0)
         let particle = Particle(s: pos0, v: vel0)
-        
+
         let satpColl = SATPolyCollision(polygon: polygon)
         let collisionResult = satpColl.collisionNormal(particle)
-        
+
         XCTAssertNotNil(collisionResult.overlap)
         if let overlap = collisionResult.overlap {
             XCTAssertEqual(overlap, 1.2738855345064835, accuracy: 1.0e-5)
         }
-        
+
         // Is the particle outside after a collision?
-        let collider = AirFoilCollision(foilShape: polygon, foilVel: Vector(x: 0.0, y: 0.0))
+        let collider = AirFoilCollision(
+            foilShape: polygon, foilVel: Vector(x: 0.0, y: 0.0))
         let (_, force) = collider.collide(particle: particle)
-        
+
         XCTAssertNotNil(force)
-        
+
         let pos1 = particle.s
         let vel1 = particle.v
         XCTAssertTrue(polygon.contains(point: CGPoint(pos0)))
@@ -196,31 +208,36 @@ class AirfoilCollisionTests: XCTestCase {
     // resulted in a recoil force, on the foil, that was directed away from the foil
     // edge.  In other words, it was effectively a "pull" on the foil rather than a
     // "push".
-    
+
     // Parameterized test function:
-    func testPositiveRecoilImpulse(particle: Particle, expectedEdgeIndex: Int?) throws {
+    func testPositiveRecoilImpulse(particle: Particle, expectedEdgeIndex: Int?)
+        throws
+    {
         let polygon = exampleFoilShape()
         let pos0 = particle.s
         let vel0 = particle.v
-        
-        let collider = AirFoilCollision(foilShape: polygon, foilVel: Vector(x: 0.0, y: 0.0))
+
+        let collider = AirFoilCollision(
+            foilShape: polygon, foilVel: Vector(x: 0.0, y: 0.0))
         let (edgeIndex, forceOnPolygon) = collider.collide(particle: particle)
         XCTAssertEqual(edgeIndex == nil, expectedEdgeIndex == nil)
         XCTAssertNotNil(forceOnPolygon)
-        
+
         // Verify the force direction differs from the edge normal direction.
         if let index = expectedEdgeIndex {
             XCTAssertEqual(index, edgeIndex ?? -1)
             let edgeNormal = polygon.edgeNormals[index]
-            if let forceOnPolygon = forceOnPolygon, forceOnPolygon.magnitude() > 0.0 {
+            if let forceOnPolygon = forceOnPolygon,
+                forceOnPolygon.magnitude() > 0.0
+            {
                 let alongEdgeNormal = edgeNormal.dot(forceOnPolygon)
                 XCTAssertTrue(alongEdgeNormal < 0.0)
-                
+
                 let normal2 = forceOnPolygon.dot(edgeNormal)
                 XCTAssertEqual(alongEdgeNormal, normal2)
             }
         }
-        
+
         let pos1 = particle.s
         XCTAssertNotEqual(pos0, pos1)
 
@@ -229,7 +246,7 @@ class AirfoilCollisionTests: XCTestCase {
         // is away from the edge.
         let accel = vel1.subtracting(vel0)
         XCTAssertTrue(accel.magnitude() >= 0.0)
-        
+
         if accel.magnitude() > 0, let index = edgeIndex {
             let edgeNormal = polygon.edgeNormals[index]
             let alongNormal = edgeNormal.dot(accel)
@@ -237,14 +254,14 @@ class AirfoilCollisionTests: XCTestCase {
         }
 
     }
-        
+
     func testPositiveRecoilImpulse1() throws {
         let pos0 = Vector(x: 52.44017413168943, y: 27.889193305986247)
         let vel0 = Vector(x: 2.9852556164223527, y: 0.037031388844566804)
         let particle = Particle(s: pos0, v: vel0)
         try testPositiveRecoilImpulse(particle: particle, expectedEdgeIndex: 13)
     }
-    
+
     func testPositiveRecoilImpulse2() throws {
         let pos0 = Vector(x: 36.94759769359838, y: 26.432684776816743)
         let vel0 = Vector(x: 3.0023826998695546, y: -0.023640365531086047)

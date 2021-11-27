@@ -2,50 +2,52 @@ import Foundation
 
 private let concurrency = ProcessInfo.processInfo.activeProcessorCount * 3
 
-/**
- * Partlcles will only ever interact with other particles that are close to them.
- * Divide the world into regions, and let each region be processed independently
- * of the others -- perhaps in a separate thread.
- * Assign particles to regions based on their current positions
- * Each particle may be assigned to one or more regions.  A particle near the
- * boundary of a region could interact with particles on the other side of the boundary.
- */
+/// Partlcles will only ever interact with other particles that are close to them.
+/// Divide the world into regions, and let each region be processed independently
+/// of the others -- perhaps in a separate thread.
+/// Assign particles to regions based on their current positions
+/// Each particle may be assigned to one or more regions.  A particle near the
+/// boundary of a region could interact with particles on the other side of the boundary.
 typealias Cell = [Particle]
 
 class WorldCells {
     let worldWidth: Double
     let worldHeight: Double
     let cellExtent: Double
-    
+
     let numH: Int
     let numV: Int
     let numCells: Int
-    
+
     private(set) var particleCellIndex: [(Int, Int)]
     private var cellStart: [Int]
     private var cellEnd: [Int]
-    
-    init(worldWidth wwIn: Double, worldHeight whIn: Double, cellExtent ceIn: Double, particles: [Particle]) {
+
+    init(
+        worldWidth wwIn: Double, worldHeight whIn: Double,
+        cellExtent ceIn: Double, particles: [Particle]
+    ) {
         worldWidth = wwIn
         worldHeight = whIn
         cellExtent = ceIn
-        
+
         numH = Int(ceil(wwIn / ceIn))
         numV = Int(ceil(whIn / ceIn))
         numCells = numH * numV
-        particleCellIndex = [(Int, Int)](repeating: (0, 0), count: particles.count)
+        particleCellIndex = [(Int, Int)](
+            repeating: (0, 0), count: particles.count)
         cellStart = [Int](repeating: -1, count: numCells)
         cellEnd = [Int](repeating: -1, count: numCells)
-        
+
         update(particles: particles)
     }
-    
+
     public func update(particles: [Particle]) {
         for i in 0..<particles.count {
             let p = particles[i]
             let x = max(0.0, min(worldWidth, p.s.x))
             let y = max(0.0, min(worldHeight, p.s.y))
-            
+
             let iCellRow = min(numV - 1, Int(y / cellExtent))
             let iCellCol = min(numH - 1, Int(x / cellExtent))
             let cellIndex = iCellRow * numH + iCellCol
@@ -68,7 +70,7 @@ class WorldCells {
             cellStart[i] = -1
             cellEnd[i] = -1
         }
-        
+
         var prevCellIndex = -1
         for i in 0..<particleCellIndex.count {
             let (cellIndex, _) = particleCellIndex[i]
@@ -85,11 +87,11 @@ class WorldCells {
             cellEnd[prevCellIndex] = particleCellIndex.count
         }
     }
-    
+
     public func cellIndex(x xCell: Int, y yCell: Int) -> Int {
         return yCell * numH + xCell
     }
-    
+
     public func cellStartEndIndices(x: Int, y: Int) -> (Int, Int) {
         let offset = cellIndex(x: x, y: y)
         return (cellStart[offset], cellEnd[offset])

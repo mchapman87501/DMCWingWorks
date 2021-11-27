@@ -1,6 +1,5 @@
 import Foundation
 
-
 // Airfoil coordinates are of a NACA2412-il foil.  Coordinates were derived
 // from the CSV download link at
 // http://airfoiltools.com/plotter/index?airfoil=naca2412-il
@@ -9,8 +8,10 @@ public struct AirFoil {
     let s: Vector
     let v: Vector
     let mass: Double = 1.0e3  // Light as a feather -- and then some
-    
-    public init(x left: Double, y bottom: Double, width: Double, alphaRad: Double) {
+
+    public init(
+        x left: Double, y bottom: Double, width: Double, alphaRad: Double
+    ) {
         // NACA2412
         // Coordinates were generated w. the algorithm detailed at
         // http://airfoiltools.com/airfoil/naca4digit
@@ -43,17 +44,17 @@ public struct AirFoil {
             (0.0462, -0.0292),
             (0.0126, -0.0166),
         ]
-        
+
         // Normalize in x.
-        let xvals = vertexCoords.map { (x, y) in x}
-        let ymin = vertexCoords.map { (x, y) in y}.min()!
+        let xvals = vertexCoords.map { (x, y) in x }
+        let ymin = vertexCoords.map { (x, y) in y }.min()!
         let xmin = xvals.min()!
         let mag = xvals.max()! - xvals.min()!
         let normedCoords = vertexCoords.map {
             (x, y) in
             (((x - xmin) / mag), ((y - ymin) / mag))
         }
-        
+
         // Alpha = angle of attack.  Since leading edge is at the origin,
         // rotate clockwise (-alphaRad).
         let cosAlpha = cos(-alphaRad)
@@ -61,7 +62,7 @@ public struct AirFoil {
         let rotatedCoords = normedCoords.map { (x, y) in
             ((cosAlpha * x - sinAlpha * y), (sinAlpha * x + cosAlpha * y))
         }
-        
+
         // Scale up so airfoil has the requested width.
         let scaledCoords = rotatedCoords.map {
             (x, y) in

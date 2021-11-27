@@ -1,7 +1,6 @@
-import XCTest
-
-import DMCWingWorksTests
 import DMCWingWorksRenderTests
+import DMCWingWorksTests
+import XCTest
 
 var tests = [XCTestCaseEntry]()
 tests += DMCWingWorksTests.allTests()
