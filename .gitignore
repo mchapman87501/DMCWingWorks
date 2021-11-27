@@ -1,0 +1,11 @@
+.build/
+.swiftpm/
+.ipynb_checkpoints/
+.DS_Store
+.vscode/
+.idea/
+.direnv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+Package.resolved
