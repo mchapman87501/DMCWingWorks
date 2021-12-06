@@ -3,6 +3,8 @@ import AppKit
 import DMCWingWorks
 
 
+typealias Polygon = DMCWingWorks.Polygon
+
 /// Makes PNG images (movie frames) from world state
 public struct MovieFrame {
     struct ParticleGeom {
@@ -16,7 +18,7 @@ public struct MovieFrame {
     let title: String
     let scale: Double
     let forceScale = 1.0
-    let foil: AirFoil
+    let foilShape: Polygon
     let foilForce: Vector
     let edgeForces: [Vector]
     let air: [ParticleGeom]
@@ -27,7 +29,7 @@ public struct MovieFrame {
         imgHeight = Double(height)
         self.title = title
         scale = imgWidth / world.worldWidth
-        foil = world.airfoil
+        foilShape = world.airfoil.shape
         foilForce = world.forceOnFoil()
         edgeForces = world.foilEdgeForces()
         air = world.air.map { (p) -> ParticleGeom in
@@ -62,31 +64,23 @@ public struct MovieFrame {
     }
 
     private func drawAir(_ rect: NSRect) {
-        // Manually scale coords to avoid upscaling fuzziness/jaggies.
-        
         let tracerColor = NSColor.init(calibratedRed: 1.0, green: 0.4, blue: 0.4, alpha: 1.0)
         let airColor = NSColor.init(calibratedRed: 0.0, green: 0.8, blue: 1.0, alpha: 0.3)
 
-        airColor.setFill()
-        airColor.set()
-        
         for (i, particle) in air.enumerated() {
             let isTracer = (0 == i % 1000)
             
-            let r = particle.radius * scale
-            let d = 2 * r * (isTracer ? 3.0 : 1.0)
+            let r = particle.radius * scale * (isTracer ? 3.0 : 1.0)
+            let d = 2 * r
             let x = particle.x * scale - r
             let y = particle.y * scale - r
             let prect = NSRect(x: x, y: y, width: d, height: d)
             let p = NSBezierPath(ovalIn: prect)
-            p.lineWidth = 0.1
             
             if isTracer {
                 tracerColor.setFill()
-                tracerColor.set()
             } else {
                 airColor.setFill()
-                airColor.set()
             }
             p.fill()
         }
@@ -94,12 +88,11 @@ public struct MovieFrame {
     
     private func drawFoil(_ rect: NSRect) {
         let path = NSBezierPath()
-        let vertices = foil.shape.vertices
+        let vertices = foilShape.vertices
         let first = vertices[0]
         path.move(to: CGPoint(x: first.x * scale, y: first.y * scale))
         for vertex in vertices[1...] {
-            let scaledVertex = CGPoint(x: vertex.x * scale, y: vertex.y * scale)
-            path.line(to: scaledVertex)
+            path.line(to: CGPoint(x: vertex.x * scale, y: vertex.y * scale))
         }
         path.close()
 
@@ -109,12 +102,11 @@ public struct MovieFrame {
 
         let strokeColor = NSColor.black
         strokeColor.set()
-        path.lineWidth = 1.0
         path.stroke()
     }
     
     private func drawEdgeForces(_ rect: NSRect) {
-        for i in 0..<foil.shape.edges.count {
+        for i in 0..<foilShape.edges.count {
             drawEdgeForce(rect, index: i)
         }
     }
@@ -127,7 +119,7 @@ public struct MovieFrame {
 
         // If the force is inward, it will have a negative extent along
         // the edge normal.
-        let magAlongNormal = edgeForce.dot(foil.shape.edgeNormals[i])
+        let magAlongNormal = edgeForce.dot(foilShape.edgeNormals[i])
         let isInward = magAlongNormal < 0
         
         let color = isInward ? NSColor.red : NSColor.blue
@@ -147,7 +139,7 @@ public struct MovieFrame {
         let rot = AffineTransform(rotationByRadians: CGFloat(angle))
 
         // Anchor at the edge midpoint.
-        let edge = foil.shape.edges[i]
+        let edge = foilShape.edges[i]
         let xMid = scale * (edge.p0.x + edge.pf.x) / 2
         let yMid = scale * (edge.p0.y + edge.pf.y) / 2
         let anchorOffset = AffineTransform(translationByX: CGFloat(xMid), byY: CGFloat(yMid))
@@ -170,14 +162,14 @@ public struct MovieFrame {
             return
         }
 
-        let arrowWidth = scale * foil.shape.bbox.width / 50.0
+        let arrowWidth = scale * foilShape.bbox.width / 50.0
         let arrow = arrowShape(length: foilForce.magnitude() * scale * forceScale, width: arrowWidth)
 
         // Offset the shape so its tail, rather than its head, will touch anchorOffset.
         let headOffset = AffineTransform(translationByX: arrow.bounds.width, byY: 0.0)
         let rot = AffineTransform(rotationByRadians: CGFloat(foilForce.angle()))
         // Anchor the force vector somewhere near the foil's center.
-        let anchor = foil.shape.center
+        let anchor = foilShape.center
         let anchorOffset = AffineTransform(translationByX: anchor.x * scale, byY: anchor.y * scale)
         
         var transform = AffineTransform.identity
@@ -195,7 +187,7 @@ public struct MovieFrame {
         arrow.fill()
     }
 
-    // Get a shape (a Bezier path) for an arrow with a given shaft length.
+    // Get a a Bezier path for an arrow with a given shaft length.
     // The arrowhead size is fixed.
     // The arrow points in the positive x direction.
     private func arrowShape(length shaftLength: Double, width: Double) -> NSBezierPath {
