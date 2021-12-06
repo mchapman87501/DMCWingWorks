@@ -126,31 +126,12 @@ public struct MovieFrame {
         color.set()
         color.setFill()
 
-        let arrow = arrowShape(length: mag * scale * forceScale, width: 3.0)
-
-        // If the force is outward, offset the arrow so its tail will touch
-        // the foil edge.
-        let arrowLength = arrow.bounds.width
-        let headXOffset = isInward ? 0.0 : arrowLength
-        let headOffset = AffineTransform(
-            translationByX: CGFloat(headXOffset), byY: 0.0)
-
-        // Would that I understood quaternions...
-        let angle = edgeForce.angle()
-        let rot = AffineTransform(rotationByRadians: CGFloat(angle))
-
         // Anchor at the edge midpoint.
         let edge = foilShape.edges[i]
         let xMid = scale * (edge.p0.x + edge.pf.x) / 2
         let yMid = scale * (edge.p0.y + edge.pf.y) / 2
-        let anchorOffset = AffineTransform(
-            translationByX: CGFloat(xMid), byY: CGFloat(yMid))
-
-        var arrowHeadTransform = AffineTransform.identity
-        arrowHeadTransform.append(headOffset)
-        arrowHeadTransform.append(rot)
-        arrowHeadTransform.append(anchorOffset)
-        arrow.transform(using: arrowHeadTransform)
+        let tipAnchor = Vector(x: xMid, y: yMid)
+        let arrow = ArrowShapeMaker().getArrowShape(vector: edgeForce.scaled(scale), tipAnchor: tipAnchor, width: 3.0)
 
         arrow.lineWidth = 0.2
         arrow.lineCapStyle = .round
@@ -164,25 +145,9 @@ public struct MovieFrame {
             return
         }
 
+        let tailAnchor = Vector(foilShape.center).scaled(scale)
         let arrowWidth = scale * foilShape.bbox.width / 50.0
-        let arrow = arrowShape(
-            length: foilForce.magnitude() * scale * forceScale,
-            width: arrowWidth)
-
-        // Offset the shape so its tail, rather than its head, will touch anchorOffset.
-        let headOffset = AffineTransform(
-            translationByX: arrow.bounds.width, byY: 0.0)
-        let rot = AffineTransform(rotationByRadians: CGFloat(foilForce.angle()))
-        // Anchor the force vector somewhere near the foil's center.
-        let anchor = foilShape.center
-        let anchorOffset = AffineTransform(
-            translationByX: anchor.x * scale, byY: anchor.y * scale)
-
-        var transform = AffineTransform.identity
-        transform.append(headOffset)
-        transform.append(rot)
-        transform.append(anchorOffset)
-        arrow.transform(using: transform)
+        let arrow = ArrowShapeMaker().getArrowShape(vector: foilForce.scaled(scale), tailAnchor: tailAnchor, width: arrowWidth)
 
         NSColor.lightGray.set()
         NSColor.white.setFill()

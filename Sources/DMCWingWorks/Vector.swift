@@ -56,7 +56,7 @@ public struct Vector: Equatable {
     }
 }
 
-extension Vector {
+public extension Vector {
     init() {
         x = 0
         y = 0
@@ -67,7 +67,7 @@ extension Vector {
     }
 }
 
-extension CGPoint {
+public extension CGPoint {
     init(_ v: Vector) {
         self.init(x: v.x, y: v.y)
     }
