@@ -13,13 +13,13 @@ public struct SlidingWindowVector {
     private let windowSize: Int
     private var values: [Vector]
     private var windowSum: Vector
-    
+
     public init(windowSize wsIn: Int = 30) {
         windowSize = wsIn
         values = [Vector]()
         windowSum = Vector()
     }
-    
+
     public mutating func add(_ value: Vector) {
         if values.count >= windowSize {
             let departing = values.removeFirst()
@@ -28,7 +28,7 @@ public struct SlidingWindowVector {
         values.append(value)
         windowSum = windowSum.adding(value)
     }
-    
+
     public func value() -> Vector {
         if values.count <= 0 {
             return Vector()

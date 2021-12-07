@@ -14,13 +14,15 @@ protocol SATProjector {
 struct SATPolyCollision {
     let polygon: Polygon
     private let edgeNormals: [Vector]
-    
+
     init(polygon polyIn: Polygon) {
         polygon = polyIn
         edgeNormals = polyIn.edgeNormals
     }
 
-    private func overlapDistance(_ particle: Particle, along normal: Vector) -> Double {
+    private func overlapDistance(_ particle: Particle, along normal: Vector)
+        -> Double
+    {
         let p0 = polygon.projectedExtrema(unit: normal)
         let pf = particle.projectedExtrema(unit: normal)
         // If the minimum of one body is less than the maximum of the other,
@@ -35,7 +37,7 @@ struct SATPolyCollision {
         let minDist = (dist0 < dist1) ? dist0 : dist1
         return (minDist <= 0.0) ? -1.0 : minDist
     }
-    
+
     /// https://www.metanetsoftware.com/technique/tutorialA.html
     /// If the objects overlap along all of the possible separating axes, then they are definitely overlapping each other;
     /// we've found a collision, and this means we need to determine the **projection vector**, which will push the two objects apart.
@@ -45,17 +47,22 @@ struct SATPolyCollision {
     /// between the two objects, and we're done --
     /// the **direction** of the projection vector is the same as the axis direction,
     /// and the **length** of the projection vector is equal to the size of the overlap along that axis.
-    
-    typealias CollisionNormalResult = (edgeIndex: Int?, normal: Vector?, overlap: Double?)
-    
+
+    typealias CollisionNormalResult = (
+        edgeIndex: Int?, normal: Vector?, overlap: Double?
+    )
+
     func collisionNormal(_ particle: Particle) -> CollisionNormalResult {
         let edgeResult = edgeCollisionNormal(particle)
         let vertResult = vertexCollisionNormal(particle)
-        
+
         if let edgeOverlap = edgeResult.overlap {
             if let vertOverlap = vertResult.overlap {
                 if edgeOverlap < vertOverlap {
-                    return (edgeResult.edgeIndex, edgeResult.normal, edgeResult.overlap)
+                    return (
+                        edgeResult.edgeIndex, edgeResult.normal,
+                        edgeResult.overlap
+                    )
                 } else {
                     return (nil, vertResult.normal, vertResult.overlap)
                 }
@@ -63,8 +70,10 @@ struct SATPolyCollision {
         }
         return (nil, nil, nil)
     }
-    
-    private func edgeCollisionNormal(_ particle: Particle) -> (edgeIndex: Int?, normal: Vector?, overlap: Double?) {
+
+    private func edgeCollisionNormal(_ particle: Particle) -> (
+        edgeIndex: Int?, normal: Vector?, overlap: Double?
+    ) {
         var iNearest: Int? = nil
         var displacementToNearest: Vector? = nil
         var overlap: Double? = nil
@@ -87,15 +96,19 @@ struct SATPolyCollision {
                 displacementToNearest = normal.scaled(currOverlap)
             }
         }
-        return (edgeIndex: iNearest, normal: displacementToNearest, overlap: overlap)
+        return (
+            edgeIndex: iNearest, normal: displacementToNearest, overlap: overlap
+        )
     }
-    
-    private func vertexCollisionNormal(_ particle: Particle) -> (normal: Vector?, overlap: Double?) {
+
+    private func vertexCollisionNormal(_ particle: Particle) -> (
+        normal: Vector?, overlap: Double?
+    ) {
         // Which polygon vertex is nearest the particle center?
         let vertNearest = polygon.nearestVertex(to: particle.s)
         let normal = particle.s.subtracting(vertNearest).unit()
         let overlap = overlapDistance(particle, along: normal)
-        
+
         if overlap > 0.0 {
             return (normal: normal.scaled(overlap), overlap: overlap)
         }

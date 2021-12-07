@@ -6,6 +6,7 @@
 //
 
 import XCTest
+
 @testable import DMCWingWorks
 
 class VectorTests: XCTestCase {

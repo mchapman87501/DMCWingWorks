@@ -2,7 +2,7 @@ import Foundation
 
 private class ParticleID {
     private static var _nextID = 0
-    
+
     public static func nextID() -> Int {
         Self._nextID += 1
         return Self._nextID
@@ -23,8 +23,7 @@ public class Particle {
 
     var s: Vector
     var v: Vector
-    
-    
+
     init() {
         id = ParticleID.nextID()
         s = Vector()
@@ -36,12 +35,12 @@ public class Particle {
         s = sIn
         v = vIn
     }
-    
+
     func reset(s sIn: Vector, v vIn: Vector) {
         s = sIn
         v = vIn
     }
-    
+
     func momentum() -> Double {
         return mass * v.magnitude()
     }
@@ -54,7 +53,7 @@ public class Particle {
     /// Collide in a thread-safe way.
     func collide(with other: Particle) {
         if self === other {
-            return;
+            return
         }
         let semas = (id < other.id) ? (lock, other.lock) : (other.lock, lock)
         semas.0.wait()
@@ -82,12 +81,12 @@ public class Particle {
 
         return numer / denom
     }
-    
+
     /// Update the particle's position based on its velocity.
     func step() {
         s = s.adding(v)
     }
-    
+
     public func pos() -> Vector {
         return s
     }

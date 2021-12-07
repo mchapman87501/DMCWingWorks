@@ -4,16 +4,16 @@
     let particle: Particle
     let pos0: Vector
     let vel0: Vector
-    
+
     var cnr: SATPolyCollision.CollisionNormalResult? = nil
-    
+
     init(polygon: Polygon, particle: Particle) {
         self.polygon = polygon
         self.particle = particle
         self.pos0 = particle.s
         self.vel0 = particle.v
     }
-    
+
     mutating func recordCollisionNormal(_ result: SATPolyCollision.CollisionNormalResult) {
         cnr = result
     }
@@ -34,7 +34,7 @@
             }
         }
     }
-    
+
     private func vstr(_ v: Vector?) -> String {
         guard v != nil else { return "(-1.0, -1.0)" }
         return "(\(v!.x), \(v!.y))"
@@ -83,18 +83,21 @@ struct AirFoilCollision {
     }
 
     typealias CollideResult = (edgeIndex: Int?, force: Vector?)
-    
+
     public func collide(particle: Particle) -> CollideResult {
-//        var diag = AFCDiagnosticReporter(polygon: foilCollider.polygon, particle: particle)
+        //        var diag = AFCDiagnosticReporter(polygon: foilCollider.polygon, particle: particle)
 
         let collisionResult = foilCollider.collisionNormal(particle)
-//        diag.recordCollisionNormal(collisionResult)
+        //        diag.recordCollisionNormal(collisionResult)
 
         if let recoilVec = collisionResult.normal {
             // Reminder: recoilForce is the force of the particle on the airfoil.
-            let recoilForce = resolveCollision(particle: particle, recoilVec: recoilVec)
-            let result = (edgeIndex: collisionResult.edgeIndex, force: recoilForce)
-//            diag.validate(collisionResult: result)
+            let recoilForce = resolveCollision(
+                particle: particle, recoilVec: recoilVec)
+            let result = (
+                edgeIndex: collisionResult.edgeIndex, force: recoilForce
+            )
+            //            diag.validate(collisionResult: result)
             return result
         }
         return (nil, nil)
@@ -102,14 +105,16 @@ struct AirFoilCollision {
 
     /// Resolve collision between the airfoil and a particle.
     /// Return the force vector of the particle on the airfoil.
-    private func resolveCollision(particle: Particle, recoilVec: Vector) -> Vector {
+    private func resolveCollision(particle: Particle, recoilVec: Vector)
+        -> Vector
+    {
         // This is not the right way to resolve the collision.
         // This just moves the particle to outside the airfoil.
         // More realistic might be to compute the past time, based on relative
         // velocities, at which the particle reached the surface of the airfoil;
         // to resolve the collision at that time point; and to integrate the particle's
         // new position at the current time based on its recoil velocity.
-        
+
         // No real collision:
         if recoilVec.magSqr() <= 1.0e-6 {
             return Vector()
@@ -120,11 +125,13 @@ struct AirFoilCollision {
         let accelMag = calcAccelerationFromAirfoil(with: particle, n: n)
         let particleAccel = n.scaled(-accelMag)
         particle.v = particle.v.adding(particleAccel)
-        
+
         return particleAccel.scaled(-particle.mass)
     }
 
-    private func calcAccelerationFromAirfoil(with particle: Particle, n: Vector) -> Double {
+    private func calcAccelerationFromAirfoil(with particle: Particle, n: Vector)
+        -> Double
+    {
         // e is the coefficient of restitution.  Set to 1 for
         // a perfectly elastic collision, I think.
         let e = 1.0

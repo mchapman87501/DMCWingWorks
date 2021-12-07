@@ -12,7 +12,7 @@ public struct Vector: Equatable {
     public func subtracting(_ other: Vector) -> Vector {
         return Vector(x: self.x - other.x, y: self.y - other.y)
     }
-    
+
     public func adding(_ offset: Vector) -> Vector {
         return Vector(x: offset.x + self.x, y: offset.y + self.y)
     }
@@ -24,7 +24,7 @@ public struct Vector: Equatable {
     public func magSqr() -> Double {
         return x * x + y * y
     }
-    
+
     public func distSqr(_ other: Vector) -> Double {
         let dx = x - other.x
         let dy = y - other.y
@@ -50,25 +50,25 @@ public struct Vector: Equatable {
     public func scaled(_ s: Double) -> Vector {
         return Vector(x: self.x * s, y: self.y * s)
     }
-    
+
     public func angle() -> Double {
         return atan2(self.y, self.x)
     }
 }
 
 extension Vector {
-    init() {
+    public init() {
         x = 0
         y = 0
     }
 
-    init(_ p: CGPoint) {
+    public init(_ p: CGPoint) {
         self.init(x: Double(p.x), y: Double(p.y))
     }
 }
 
 extension CGPoint {
-    init(_ v: Vector) {
+    public init(_ v: Vector) {
         self.init(x: v.x, y: v.y)
     }
 }

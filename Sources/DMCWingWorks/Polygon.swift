@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 public struct Polygon {
     public struct Segment {
@@ -12,20 +12,18 @@ public struct Polygon {
                 (p0.y < pf.y)
                 // Upward crossing includes segment start,
                 // excludes segment end.
-                && (p0.y <= y) && (y < pf.y)
-            )
+                && (p0.y <= y) && (y < pf.y))
         }
-        
+
         func crossesDownward(_ y: CGFloat) -> Bool {
             return (
                 // Downward, non-horizontal edge.
                 (p0.y > pf.y)
                 // Downward crossing excludes segment start, includes
                 // segment end.
-                    && (pf.y <= y) && (y < p0.y)
-            )
+                && (pf.y <= y) && (y < p0.y))
         }
-        
+
         func xIntersect(_ rayOrigin: CGPoint) -> CGFloat {
             // Caller must ensure this is not a horizontal line.
             let dx = pf.x - p0.x
@@ -54,7 +52,7 @@ public struct Polygon {
 
     public let vertices: [CGPoint]
     private let vertexVectors: [Vector]
-    
+
     public let edges: [Segment]
     public let edgeNormals: [Vector]
     public let bbox: CGRect
@@ -67,13 +65,13 @@ public struct Polygon {
      Edge Crossing Rules
 
      1. an upward edge includes its starting endpoint, and excludes its final endpoint;
-      
+
      2. a downward edge excludes its starting endpoint, and includes its final endpoint;
-      
+
      3. horizontal edges are excluded
-      
+
      4. the edge-ray intersection point must be strictly right of the point P.
-     
+
      cn_PnPoly( Point P, Point V[], int n )
      {
          int    cn = 0;    // the  crossing number counter
@@ -107,7 +105,7 @@ public struct Polygon {
         }
         return false
     }
-    
+
     func contains(x: Double, y: Double) -> Bool {
         return contains(point: CGPoint(x: x, y: y))
     }
@@ -120,7 +118,7 @@ public struct Polygon {
             Segment(p0: vertices[$0], pf: vertices[($0 + 1) % numVertices])
         }
     }
-    
+
     private static func getEdgeNormals(_ edges: [Segment]) -> [Vector] {
         edges.map { edge in
             edge.asVector().normal().unit()
@@ -140,9 +138,11 @@ extension Polygon {
                 bb = bb.union(CGRect(x: v.x, y: v.y, width: 0.0, height: 0.0))
             }
         }
-        
-        let xMean = verticesIn.map{$0.x}.reduce(0.0, +) / Double(verticesIn.count)
-        let yMean = verticesIn.map{$0.y}.reduce(0.0, +) / Double(verticesIn.count)
+
+        let xMean =
+            verticesIn.map { $0.x }.reduce(0.0, +) / Double(verticesIn.count)
+        let yMean =
+            verticesIn.map { $0.y }.reduce(0.0, +) / Double(verticesIn.count)
 
         vertices = verticesIn
         vertexVectors = vertices.map { v in
@@ -153,8 +153,8 @@ extension Polygon {
         bbox = bb
         center = CGPoint(x: xMean, y: yMean)
     }
-    
-    init (_ verticesIn: [(Double, Double)]) {
+
+    init(_ verticesIn: [(Double, Double)]) {
         self.init(verticesIn.map { CGPoint(x: $0, y: $1) })
     }
 }
@@ -181,6 +181,7 @@ extension Polygon: SATProjector {
         for i in 0..<vertices.count {
             projections[i] = vertexVectors[i].dot(vector)
         }
-        return ProjExtrema(vMin: projections.min() ?? 0.0, vMax: projections.max() ?? 0.0)
-    }    
+        return ProjExtrema(
+            vMin: projections.min() ?? 0.0, vMax: projections.max() ?? 0.0)
+    }
 }

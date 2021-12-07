@@ -1,7 +1,7 @@
-import Foundation
 import AppKit
 import DMCMovieWriter
 import DMCWingWorks
+import Foundation
 
 public struct WorldWriter {
     let world: World
@@ -10,18 +10,22 @@ public struct WorldWriter {
     let title: String
     let movieWriter: DMCMovieWriter
 
-    public init(world: World, writingTo: URL, width: Int, height: Int, title: String = "") throws {
+    public init(
+        world: World, writingTo: URL, width: Int, height: Int,
+        title: String = ""
+    ) throws {
         self.world = world
         self.width = width
         self.height = height
         self.title = title
-        movieWriter = try DMCMovieWriter(outpath: writingTo, width: width, height: height)
+        movieWriter = try DMCMovieWriter(
+            outpath: writingTo, width: width, height: height)
     }
-    
+
     public func finish() throws {
         try movieWriter.finish()
     }
-    
+
     /// Add a title frame.
     /// - Parameters:
     ///   - title: Text to show in the title frame.  Multiline text *should* be supported, but I can't guarantee that it will be.
@@ -30,28 +34,36 @@ public struct WorldWriter {
         let size = NSSize(width: width, height: height)
 
         let numRampFrames = 30
-        let rampFrameDuration = 1.0/30.0
+        let rampFrameDuration = 1.0 / 30.0
 
         var alpha = 0.0
         let dAlpha = 1.0 / Double(numRampFrames)
         for _ in 0..<numRampFrames {
-            try addTitleFrame(title: title, size: size, alpha: alpha, duration: rampFrameDuration)
+            try addTitleFrame(
+                title: title, size: size, alpha: alpha,
+                duration: rampFrameDuration)
             alpha += dAlpha
         }
-        
-        try addTitleFrame(title: title, size: size, alpha: 1.0, duration: Double(seconds))
+
+        try addTitleFrame(
+            title: title, size: size, alpha: 1.0, duration: Double(seconds))
 
         for _ in 0..<numRampFrames {
-            try addTitleFrame(title: title, size: size, alpha: alpha, duration: rampFrameDuration)
+            try addTitleFrame(
+                title: title, size: size, alpha: alpha,
+                duration: rampFrameDuration)
             alpha -= dAlpha
         }
         try movieWriter.drain()
     }
-    
-    private func addTitleFrame(title: String, size: NSSize, alpha: Double, duration: Double) throws {
+
+    private func addTitleFrame(
+        title: String, size: NSSize, alpha: Double, duration: Double
+    ) throws {
         try autoreleasepool {
             try movieWriter.addFrame(
-                titleFrameImage(title: title, size: size, alpha: alpha), duration: duration)
+                titleFrameImage(title: title, size: size, alpha: alpha),
+                duration: duration)
         }
     }
 
@@ -87,7 +99,8 @@ public struct WorldWriter {
 
     public func writeNextFrame(alpha: Double = 1.0) throws {
         try autoreleasepool {
-            let frame = MovieFrame(world: world, width: width, height: height, title: title)
+            let frame = MovieFrame(
+                world: world, width: width, height: height, title: title)
             try movieWriter.addFrame(frame.createFrame(alpha: alpha))
         }
     }
@@ -98,7 +111,8 @@ public struct WorldWriter {
             let desiredHeight = Double(height) * scaleFactor
             let w = Int(desiredWidth)
             let h = Int(desiredHeight)
-            let frame = MovieFrame(world: world, width: w, height: h, title: title)
+            let frame = MovieFrame(
+                world: world, width: w, height: h, title: title)
             let result = frame.createFrame()
             return result
         }
