@@ -28,17 +28,28 @@ class WorldWriterTests: XCTestCase {
         // Try for enough particle momentum to produce "visible" force on foil edges.
         let world = World(airfoil: foil, width: 8.0, height: 6.0, maxParticleSpeed: 0.01, windSpeed: 0.15)
         
+        let movieWidth = 320
+        let movieHeight = 240
         guard let writer = try? WorldWriter(
                 world: world, writingTo: movieURL,
-                width: 320, height: 240) else {
+                width: movieWidth, height: movieHeight) else {
             XCTFail("Could not create world writer.")
             return
         }
+        
+        try writer.showTitle("Your Title Here")
         
         for _ in 0..<32 {
             world.step()
             try writer.writeNextFrame()
         }
+        
+        let frameWidth = Double(movieWidth) / 2.0
+        let frameHeight = Double(movieHeight) / 2.0
+        let frameImage = writer.getNextFrame(width: frameWidth)
+        XCTAssertEqual(frameImage.size.width, frameWidth)
+        XCTAssertEqual(frameImage.size.height, frameHeight)
+
         try writer.finish()
         let moviePath = movieURL.path
         let fm = FileManager.default
