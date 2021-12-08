@@ -1,3 +1,5 @@
+import DMC2D
+
 /*
  struct AFCDiagnosticReporter {
     let polygon: Polygon
@@ -119,14 +121,14 @@ struct AirFoilCollision {
         if recoilVec.magSqr() <= 1.0e-6 {
             return Vector()
         }
-        particle.s = particle.s.adding(recoilVec)
+        particle.s = particle.s + recoilVec
         let n = recoilVec.unit()
         // Treat the airfoil as being infinitely massive.
         let accelMag = calcAccelerationFromAirfoil(with: particle, n: n)
-        let particleAccel = n.scaled(-accelMag)
-        particle.v = particle.v.adding(particleAccel)
+        let particleAccel = n * -accelMag
+        particle.v = particle.v + particleAccel
 
-        return particleAccel.scaled(-particle.mass)
+        return particleAccel * -particle.mass
     }
 
     private func calcAccelerationFromAirfoil(with particle: Particle, n: Vector)
@@ -136,7 +138,7 @@ struct AirFoilCollision {
         // a perfectly elastic collision, I think.
         let e = 1.0
         // Relative collision velocity:
-        let vr = foilVel.subtracting(particle.v)
+        let vr = foilVel - particle.v
 
         // A special case - or a bug?
         // Suppose the particle is already moving away from the foil.

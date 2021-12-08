@@ -1,4 +1,5 @@
 import Foundation
+import DMC2D
 
 struct ProjExtrema {
     let vMin: Double
@@ -88,12 +89,12 @@ struct SATPolyCollision {
                 if currOverlap < bestOverlap {
                     overlap = currOverlap
                     iNearest = i
-                    displacementToNearest = normal.scaled(currOverlap)
+                    displacementToNearest = normal * currOverlap
                 }
             } else {
                 overlap = currOverlap
                 iNearest = i
-                displacementToNearest = normal.scaled(currOverlap)
+                displacementToNearest = normal * currOverlap
             }
         }
         return (
@@ -106,12 +107,24 @@ struct SATPolyCollision {
     ) {
         // Which polygon vertex is nearest the particle center?
         let vertNearest = polygon.nearestVertex(to: particle.s)
-        let normal = particle.s.subtracting(vertNearest).unit()
+        let normal = (particle.s - vertNearest).unit()
         let overlap = overlapDistance(particle, along: normal)
 
         if overlap > 0.0 {
-            return (normal: normal.scaled(overlap), overlap: overlap)
+            return (normal: normal * overlap, overlap: overlap)
         }
         return (nil, nil)
+    }
+}
+
+
+extension Polygon: SATProjector {
+    func projectedExtrema(unit vector: Vector) -> ProjExtrema {
+        var projections = Array(repeating: 0.0, count: vertices.count)
+        for i in 0..<vertices.count {
+            projections[i] = vertexVectors[i].dot(vector)
+        }
+        return ProjExtrema(
+            vMin: projections.min() ?? 0.0, vMax: projections.max() ?? 0.0)
     }
 }

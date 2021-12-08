@@ -1,11 +1,5 @@
-//
-//  SlidingWindowVector.swift
-//  DMCWingWorks
-//
-//  Created by Mitchell Chapman on 12/18/20.
-//
-
 import Foundation
+import DMC2D
 
 /// A  sliding window vector averages values of a vector – e.g., a force vector calculated from
 /// instantaneous impulses – over time intervals – e.g., the last N samples.
@@ -23,16 +17,16 @@ public struct SlidingWindowVector {
     public mutating func add(_ value: Vector) {
         if values.count >= windowSize {
             let departing = values.removeFirst()
-            windowSum = windowSum.subtracting(departing)
+            windowSum -= departing
         }
         values.append(value)
-        windowSum = windowSum.adding(value)
+        windowSum += value
     }
 
     public func value() -> Vector {
         if values.count <= 0 {
             return Vector()
         }
-        return windowSum.scaled(1.0 / Double(values.count))
+        return windowSum / Double(values.count)
     }
 }

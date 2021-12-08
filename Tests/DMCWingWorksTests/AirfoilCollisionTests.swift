@@ -1,19 +1,16 @@
-//
-//  AirfoilCollisionTests.swift
-//  DMCWingWorksTests
-//
-//  Created by Mitchell Chapman on 12/21/20.
-//
-
 import XCTest
 
 @testable import DMCWingWorks
+
+import DMC2D
+
+typealias Polygon = DMC2D.Polygon
 
 class AirfoilCollisionTests: XCTestCase {
 
     func testCollision1() throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 100.0, alphaRad: 0.0)
-        let pos = Vector(foil.shape.vertices[0]).adding(Vector(x: 0.01, y: 0.0))
+        let pos = Vector(foil.shape.vertices[0]) + Vector(x: 0.01, y: 0.0)
         let vel = Vector(x: 0.1, y: 0.0)
         let vUnit0 = vel.unit()
         let angle0 = atan2(vUnit0.y, vUnit0.x)
@@ -44,7 +41,7 @@ class AirfoilCollisionTests: XCTestCase {
         let vertex = foil.shape.vertices[i]
         // If a particle is coincident with a vertex, there is no normal
         // vector between them - thus, no way to figure out a recoil direction.
-        let pos = Vector(vertex).adding(Vector(x: 0.01, y: 0.01))
+        let pos = Vector(vertex) + Vector(x: 0.01, y: 0.01)
 
         let vel = Vector(x: 0.1, y: 0.0)
         let particle = Particle(s: pos, v: vel)
@@ -86,8 +83,8 @@ class AirfoilCollisionTests: XCTestCase {
         let pos = Vector(x: xmid, y: ymid)
 
         // Ensure the velocity vector points into the edge.
-        let vel = Vector(x: 0.1, y: 0.0).adding(
-            foil.shape.edgeNormals[edgeIndex].scaled(-0.01))
+        let vel = Vector(x: 0.1, y: 0.0) + (
+            foil.shape.edgeNormals[edgeIndex] * -0.01)
         let particle = Particle(s: pos, v: vel)
 
         let vUnit0 = vel.unit()
@@ -134,7 +131,7 @@ class AirfoilCollisionTests: XCTestCase {
     // 1) Airfoil collision resolution sometimes completed with a particle
     // still inside the airfoil.
 
-    func exampleFoilShape() -> DMCWingWorks.Polygon {
+    func exampleFoilShape() -> Polygon {
         let vertexCoords: [(Double, Double)] = [
             (21.61566625583794, 30.582579917106106),
             (22.285935920085585, 31.40518764019059),
@@ -244,7 +241,7 @@ class AirfoilCollisionTests: XCTestCase {
         let vel1 = particle.v
         // Verify that the particle's change in velocity
         // is away from the edge.
-        let accel = vel1.subtracting(vel0)
+        let accel = vel1 - vel0
         XCTAssertTrue(accel.magnitude() >= 0.0)
 
         if accel.magnitude() > 0, let index = edgeIndex {

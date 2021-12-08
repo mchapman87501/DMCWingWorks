@@ -1,6 +1,7 @@
 import XCTest
 
 @testable import DMCWingWorks
+import DMC2D
 
 class ParticleCollisionTests: XCTestCase {
 

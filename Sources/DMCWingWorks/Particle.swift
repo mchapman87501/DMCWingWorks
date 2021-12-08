@@ -1,4 +1,5 @@
 import Foundation
+import DMC2D
 
 private class ParticleID {
     private static var _nextID = 0
@@ -58,12 +59,12 @@ public class Particle {
         let semas = (id < other.id) ? (lock, other.lock) : (other.lock, lock)
         semas.0.wait()
         semas.1.wait()
-        let n = self.s.subtracting(other.s).unit()
+        let n = (self.s - other.s).unit()
         let jr = calcImpulse(with: other, n: n)
-        let dv = n.scaled(-jr / self.mass)
-        let otherDV = n.scaled(jr / other.mass)
-        v = v.subtracting(dv)
-        other.v = other.v.subtracting(otherDV)
+        let dv = n * (-jr / self.mass)
+        let otherDV = n * (jr / other.mass)
+        v -= dv
+        other.v = other.v - otherDV
         semas.1.signal()
         semas.0.signal()
     }
@@ -73,7 +74,7 @@ public class Particle {
         // a perfectly elastic collision, I think.
         let e = 1.0
         // Relative collision velocity:
-        let vr = v.subtracting(other.v)
+        let vr = v - other.v
         let numer = -(1.0 + e) * vr.dot(n)
 
         // Ignore rotational inertia
@@ -84,7 +85,7 @@ public class Particle {
 
     /// Update the particle's position based on its velocity.
     func step() {
-        s = s.adding(v)
+        s += v
     }
 
     public func pos() -> Vector {

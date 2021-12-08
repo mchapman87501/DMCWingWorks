@@ -1,8 +1,9 @@
 import AppKit
 import DMCWingWorks
+import DMC2D
 import Foundation
 
-typealias Polygon = DMCWingWorks.Polygon
+typealias Polygon = DMC2D.Polygon
 
 /// Makes PNG images (movie frames) from world state
 public struct MovieFrame {
@@ -132,7 +133,7 @@ public struct MovieFrame {
         let yMid = scale * (edge.p0.y + edge.pf.y) / 2
         let tipAnchor = Vector(x: xMid, y: yMid)
         let arrow = ArrowShapeMaker().getArrowShape(
-            vector: edgeForce.scaled(scale), tipAnchor: tipAnchor, width: 3.0)
+            vector: edgeForce * scale, tipAnchor: tipAnchor, width: 3.0)
 
         arrow.lineWidth = 0.2
         arrow.lineCapStyle = .round
@@ -146,10 +147,10 @@ public struct MovieFrame {
             return
         }
 
-        let tailAnchor = Vector(foilShape.center).scaled(scale)
+        let tailAnchor = Vector(foilShape.center) * scale
         let arrowWidth = scale * foilShape.bbox.width / 50.0
         let arrow = ArrowShapeMaker().getArrowShape(
-            vector: foilForce.scaled(scale), tailAnchor: tailAnchor,
+            vector: foilForce * scale, tailAnchor: tailAnchor,
             width: arrowWidth)
 
         NSColor.lightGray.set()

@@ -1,5 +1,6 @@
 import Foundation
 import GameplayKit
+import DMC2D
 
 private let concurrency = ProcessInfo.processInfo.activeProcessorCount * 3
 
@@ -76,8 +77,8 @@ struct Recycler {
         let x = Double.random(in: (-1.0...1.0))
         let y = Double.random(in: (-1.0...1.0))
         let mag = GaussRandom.rand()
-        let vRandom = Vector(x: x, y: y).unit().scaled(mag)
-        return vRandom.adding(vWind)
+        let vRandom = Vector(x: x, y: y).unit() * mag
+        return vRandom + vWind
 
     }
 
@@ -350,17 +351,16 @@ extension World {
                 for j in i..<jMax {
                     let collResult = collide(air[j])
                     if let impulseVec = collResult.force {
-                        chunkForce = chunkForce.adding(impulseVec)
+                        chunkForce = chunkForce + impulseVec
                         if let iEdge = collResult.edgeIndex {
-                            chunkEdgeForces[iEdge] = chunkEdgeForces[iEdge]
-                                .adding(impulseVec)
+                            chunkEdgeForces[iEdge] = chunkEdgeForces[iEdge] + impulseVec
                         }
                     }
                 }
                 resultQueue.async(group: group) {
-                    netForce = netForce.adding(chunkForce)
+                    netForce = netForce + chunkForce
                     for i in 0..<numEdges {
-                        edgeForces[i] = edgeForces[i].adding(chunkEdgeForces[i])
+                        edgeForces[i] = edgeForces[i] + chunkEdgeForces[i]
                     }
                 }
             }
