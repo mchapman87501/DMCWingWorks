@@ -8,7 +8,7 @@ let package = Package(
     // https://docs.swift.org/package-manager/PackageDescription/PackageDescription.html
     platforms: [
         .macOS(.v11),
-        //.linux
+        // .linux
     ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.

@@ -32,7 +32,7 @@ public struct MovieFrame {
         foilShape = world.airfoil.shape
         foilForce = world.forceOnFoil()
         edgeForces = world.foilEdgeForces()
-        air = world.air.map { (p) -> ParticleGeom in
+        air = world.air.map { p -> ParticleGeom in
             let pos = p.pos()
             return ParticleGeom(x: pos.x, y: pos.y, radius: p.radius)
         }
@@ -64,9 +64,9 @@ public struct MovieFrame {
     }
 
     private func drawAir(_ rect: NSRect) {
-        let tracerColor = NSColor.init(
+        let tracerColor = NSColor(
             calibratedRed: 1.0, green: 0.4, blue: 0.4, alpha: 1.0)
-        let airColor = NSColor.init(
+        let airColor = NSColor(
             calibratedRed: 0.0, green: 0.8, blue: 1.0, alpha: 0.3)
 
         for (i, particle) in air.enumerated() {

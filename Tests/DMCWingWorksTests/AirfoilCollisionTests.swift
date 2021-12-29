@@ -7,7 +7,6 @@ import DMC2D
 typealias Polygon = DMC2D.Polygon
 
 class AirfoilCollisionTests: XCTestCase {
-
     func testCollision1() throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 100.0, alphaRad: 0.0)
         let pos = Vector(foil.shape.vertices[0]) + Vector(x: 0.01, y: 0.0)
@@ -28,13 +27,13 @@ class AirfoilCollisionTests: XCTestCase {
         XCTAssertNotEqual(angle0, anglef)
     }
 
-    func vectorStr(_ v: Vector) -> String {
+    private func vectorStr(_ v: Vector) -> String {
         let x = String(format: "%.3f", v.x)
         let y = String(format: "%.3f", v.y)
         return "[\(x), \(y)]"
     }
 
-    func testCollideVertex(index i: Int) throws {
+    private func testCollideVertex(index i: Int) throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 100.0, alphaRad: 0.0)
         let collider = AirFoilCollision(foil: foil)
 
@@ -72,7 +71,7 @@ class AirfoilCollisionTests: XCTestCase {
         }
     }
 
-    func testCollideMidEdge(edgeIndex: Int) throws {
+    private func testCollideMidEdge(edgeIndex: Int) throws {
         let foil = AirFoil(x: 0.0, y: 0.0, width: 100.0, alphaRad: 0.0)
         let collider = AirFoilCollision(foil: foil)
 
@@ -131,7 +130,7 @@ class AirfoilCollisionTests: XCTestCase {
     // 1) Airfoil collision resolution sometimes completed with a particle
     // still inside the airfoil.
 
-    func exampleFoilShape() -> Polygon {
+    private func exampleFoilShape() -> Polygon {
         let vertexCoords: [(Double, Double)] = [
             (21.61566625583794, 30.582579917106106),
             (22.285935920085585, 31.40518764019059),
@@ -207,7 +206,7 @@ class AirfoilCollisionTests: XCTestCase {
     // "push".
 
     // Parameterized test function:
-    func testPositiveRecoilImpulse(particle: Particle, expectedEdgeIndex: Int?)
+    private func testPositiveRecoilImpulse(particle: Particle, expectedEdgeIndex: Int?)
         throws
     {
         let polygon = exampleFoilShape()
@@ -249,7 +248,6 @@ class AirfoilCollisionTests: XCTestCase {
             let alongNormal = edgeNormal.dot(accel)
             XCTAssertTrue(alongNormal >= 0.0)
         }
-
     }
 
     func testPositiveRecoilImpulse1() throws {

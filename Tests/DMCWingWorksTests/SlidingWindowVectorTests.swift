@@ -11,7 +11,6 @@ import XCTest
 import DMC2D
 
 class SlidingWindowVectorTests: XCTestCase {
-
     func testEmpty() throws {
         let vec = SlidingWindowVector()
         XCTAssertEqual(vec.value(), Vector())

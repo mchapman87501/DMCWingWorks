@@ -68,7 +68,6 @@ struct Recycler {
         }
         let s = Vector(x: x, y: y)
         particle.reset(s: s, v: randomParticleVelocity())
-
     }
 
     private func randomParticleVelocity() -> Vector {
@@ -79,7 +78,6 @@ struct Recycler {
         let mag = GaussRandom.rand()
         let vRandom = Vector(x: x, y: y).unit() * mag
         return vRandom + vWind
-
     }
 
     /// Recycle particles that have left the "stage", i.e., moved out of world bounds.
@@ -308,7 +306,6 @@ public class World {
         collideWithFoil()
         integrate()
     }
-
 }
 
 // Airfoil-particle collision processing:

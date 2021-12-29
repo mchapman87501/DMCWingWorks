@@ -75,9 +75,9 @@ struct SATPolyCollision {
     private func edgeCollisionNormal(_ particle: Particle) -> (
         edgeIndex: Int?, normal: Vector?, overlap: Double?
     ) {
-        var iNearest: Int? = nil
-        var displacementToNearest: Vector? = nil
-        var overlap: Double? = nil
+        var iNearest: Int?
+        var displacementToNearest: Vector?
+        var overlap: Double?
 
         for (i, normal) in edgeNormals.enumerated() {
             let currOverlap = overlapDistance(particle, along: normal)
@@ -116,7 +116,6 @@ struct SATPolyCollision {
         return (nil, nil)
     }
 }
-
 
 extension Polygon: SATProjector {
     func projectedExtrema(unit vector: Vector) -> ProjExtrema {

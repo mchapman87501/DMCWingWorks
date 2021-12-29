@@ -53,7 +53,7 @@ class WorldCells {
             let cellIndex = iCellRow * numH + iCellCol
             particleCellIndex[i] = (cellIndex, i)
         }
-        particleCellIndex.sort { (entry1, entry2) in
+        particleCellIndex.sort { entry1, entry2 in
             let (i1, ip1) = entry1
             let (i2, ip2) = entry2
             if i1 < i2 {

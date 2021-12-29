@@ -4,7 +4,6 @@ import XCTest
 import DMC2D
 
 class ParticleCollisionTests: XCTestCase {
-
     // This is derived from a test case that shows a large change in (linear)
     // momentum in the C++ OpenMP wingworks implementation.
     func testFailingOpenMPScenario() throws {
