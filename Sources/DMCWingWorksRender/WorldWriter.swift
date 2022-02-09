@@ -3,7 +3,7 @@ import DMCMovieWriter
 import DMCWingWorks
 import Foundation
 
-/// Create a movie showing the evolving state of a `World` particle simulation.
+/// Creates movies showing the evolving state of a `World` particle simulation.
 public struct WorldWriter {
     let world: World
     let width: Int
@@ -11,6 +11,16 @@ public struct WorldWriter {
     let title: String
     let movieWriter: DMCMovieWriter
 
+    /// Create a new instance to record a simulation to a movie URL.
+    ///
+    /// Caveat emptor: this has been tested only with local `file:` movie URLs.
+    ///
+    /// - Parameters:
+    ///   - world: the world to be recorded
+    ///   - writingTo: the location of the output movie
+    ///   - width: width of the movie in pixels
+    ///   - height: height of the movie in pixels
+    ///   - title: title text to be displayed in legend overlays
     public init(
         world: World, writingTo: URL, width: Int, height: Int,
         title: String = ""
@@ -23,14 +33,17 @@ public struct WorldWriter {
             outpath: writingTo, width: width, height: height)
     }
 
+    /// Finish recording the movie.
     public func finish() throws {
         try movieWriter.finish()
     }
 
     /// Add a title frame.
+    ///
+    /// Caveat: Multline titles *should* be supported, but this has not been tested.
     /// - Parameters:
-    ///   - title: Text to show in the title frame.  Multiline text *should* be supported, but I can't guarantee that it will be.
-    ///   - duration: How long to display the title frame, excluding any fade-in/out time.
+    ///   - title: Text to show in the title frame
+    ///   - duration: How long to display the title frame, excluding any fade-in/out time
     public func showTitle(_ title: String, duration seconds: Int = 3) throws {
         let size = NSSize(width: width, height: height)
 
@@ -98,6 +111,12 @@ public struct WorldWriter {
         }
     }
 
+    /// Record the current state of the world as a new movie frame.
+    ///
+    /// `alpha` can be used for fade-in/fade-out effects.  A value of 0 produces a black, "faded out," frame.
+    /// A value of 1 produces a normal, "faded in," frame.
+    ///
+    /// - Parameter alpha: the movie frame transparency
     public func writeNextFrame(alpha: Double = 1.0) throws {
         try autoreleasepool {
             let frame = MovieFrame(
@@ -106,6 +125,13 @@ public struct WorldWriter {
         }
     }
 
+    /// Get an image showing the current state of the world.
+    ///
+    /// This method is for creating images to be displayed in user interfaces, e.g., to show the
+    /// progress of a movie recording.
+    ///
+    /// - Parameter desiredWidth: the desired width of the image, in points
+    /// - Returns: an image depicting the current state of the world
     public func getNextFrame(width desiredWidth: Double) -> NSImage {
         autoreleasepool {
             let scaleFactor = desiredWidth / Double(width)
