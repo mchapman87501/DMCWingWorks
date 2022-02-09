@@ -1,6 +1,6 @@
+import DMC2D
 import Foundation
 import GameplayKit
-import DMC2D
 
 private let concurrency = ProcessInfo.processInfo.activeProcessorCount * 3
 
@@ -23,15 +23,13 @@ private func getWorldDensity(
 
 class GaussRandom {
     static let gaussianSrc = GKRandomSource()
-    // GameKit randoms seem to be oriented toward returning integer values.
-    // Try to generate random values in 0.0 ... 1.0.
+    // GameKit randoms seem to produce integer values. Convert to values in 0...1.
     static let gaussianDistro = GKGaussianDistribution(
         randomSource: gaussianSrc, lowestValue: -1_000_000_000,
         highestValue: 1_000_000_000)
 
     public static func rand() -> Double {
-        let rval = Double(gaussianDistro.nextInt()) / 2_000_000_000.0
-        return rval
+        Double(gaussianDistro.nextInt()) / 2_000_000_000.0
     }
 }
 
@@ -43,8 +41,7 @@ struct Recycler {
     let maxParticleSpeed: Double
     let windSpeed: Double
 
-    /// Assign random positions and velocities to particles.
-    public func randomize(particles: [Particle]) {
+    func randomize(particles: [Particle]) {
         for p in particles {
             randomizeOne(particle: p)
         }
@@ -80,8 +77,7 @@ struct Recycler {
         return vRandom + vWind
     }
 
-    /// Recycle particles that have left the "stage", i.e., moved out of world bounds.
-    public func recycle(particles: [Particle]) {
+    func recycle(particles: [Particle]) {
         let offstageParticles = particles.filter { isOutOfWorld(particle: $0) }
         for particle in offstageParticles {
             recycleOne(particle: particle)
@@ -89,10 +85,8 @@ struct Recycler {
     }
 
     private func recycleOne(particle: Particle) {
-        // I have no idea how to recycle given an environment in which the
-        // max (random) particle speed is an order of magnitude greater than
-        // the wind speed.
-
+        // Not sure how to recycle given an environment in which the max random
+        // particle speed is an order of magnitude > than the wind speed.
         let xOld = particle.s.x
         let yOld = particle.s.y
 
@@ -141,16 +135,23 @@ struct Recycler {
     }
 }
 
+/// Represents a world full of monoatomic gas particles and one lucky airfoil.
 public class World {
+    /// Airfoil with which particles interact
     public let airfoil: AirFoil
 
+    /// World extent along x axis
     public let worldWidth: Double
+    /// World extent along y axis
     public let worldHeight: Double
+
     let maxPartSpeed: Double
     let windSpeed: Double
     let numParticles: Int
 
+    /// All of the particles in the world
     public private(set) var air: [Particle]
+
     var netForceOnFoil: SlidingWindowVector
     var edgeNormalForces: [SlidingWindowVector]
 
@@ -162,6 +163,17 @@ public class World {
     private let queue = DispatchQueue(
         label: "UpdateQueue", qos: .utility, attributes: .concurrent)
 
+    /// Create a new world.
+    ///
+    /// Both `maxParticleSpeed` and `windSpeed` should be scaled so that particles move roughly
+    /// one world unit per ``step()``.  Otherwise particle-particle collisions may be missed, or particles may end up
+    /// inside the airfoil, with incorrect collision resolution.
+    /// - Parameters:
+    ///   - foilIn: an airfoil with which particles will interact
+    ///   - width: Extent of the world along the x axis
+    ///   - height: Extent of the world along the y axis
+    ///   - maxParticleSpeed: the maximum speed of any particle, in world extent units
+    ///   - windSpeed: wind speed to be applied uniformly to all particles, in world extent units, in positive x direction
     public init(
         airfoil foilIn: AirFoil, width: Double, height: Double,
         maxParticleSpeed: Double, windSpeed: Double
@@ -299,7 +311,9 @@ public class World {
         recycler.recycle(particles: air)
     }
 
-    // In an unbounded space, the air will simply dissipate.
+    /// Calculate one simulation step.
+    ///
+    /// Collide particles with each other and with the airfoil, and update their positions.
     public func step() {
         cells.update(particles: air)
         collideParticles()
@@ -310,8 +324,17 @@ public class World {
 
 // Airfoil-particle collision processing:
 extension World {
+    /// Get the net force on the airfoil due to particle interactions.
+    ///
+    /// The returned value is a running average over the most recent time steps.
+    /// - Returns: the net force on the airfoil
     public func forceOnFoil() -> Vector { return netForceOnFoil.value() }
 
+    /// Get the net force on each airfoil shape segment due to particle interactions.
+    ///
+    /// As with ``forceOnFoil()``, this method returns running average forces.
+    ///
+    /// - Returns: an array of net force vectors, one for each airfoil shape segment
     public func foilEdgeForces() -> [Vector] {
         return edgeNormalForces.map { $0.value() }
     }
@@ -342,22 +365,21 @@ extension World {
             queue.async(group: group) {
                 let iNext = i + chunkSize
                 let jMax = (iNext < iMax) ? iNext : iMax
-                var chunkForce = Vector()
-                var chunkEdgeForces = [Vector](
-                    repeating: Vector(), count: numEdges)
+                var chunkNF = Vector()
+                var chunkEFs = [Vector](repeating: Vector(), count: numEdges)
                 for j in i..<jMax {
                     let collResult = collide(air[j])
                     if let impulseVec = collResult.force {
-                        chunkForce = chunkForce + impulseVec
+                        chunkNF += impulseVec
                         if let iEdge = collResult.edgeIndex {
-                            chunkEdgeForces[iEdge] = chunkEdgeForces[iEdge] + impulseVec
+                            chunkEFs[iEdge] += impulseVec
                         }
                     }
                 }
                 resultQueue.async(group: group) {
-                    netForce = netForce + chunkForce
+                    netForce = netForce + chunkNF
                     for i in 0..<numEdges {
-                        edgeForces[i] = edgeForces[i] + chunkEdgeForces[i]
+                        edgeForces[i] += chunkEFs[i]
                     }
                 }
             }
@@ -366,6 +388,8 @@ extension World {
         return (netForce, edgeForces)
     }
 
+    /// Get the total momentum of all world particles.
+    /// - Returns: the total momentum
     public func netMomentum() -> Double {
         return air.reduce(0.0) { partial, curr in
             partial + curr.momentum()

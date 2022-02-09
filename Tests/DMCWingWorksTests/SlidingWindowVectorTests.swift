@@ -5,10 +5,10 @@
 //  Created by Mitchell Chapman on 12/30/20.
 //
 
+import DMC2D
 import XCTest
 
 @testable import DMCWingWorks
-import DMC2D
 
 class SlidingWindowVectorTests: XCTestCase {
     func testEmpty() throws {

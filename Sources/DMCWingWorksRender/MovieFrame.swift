@@ -1,11 +1,11 @@
 import AppKit
-import DMCWingWorks
 import DMC2D
+import DMCWingWorks
 import Foundation
 
 typealias Polygon = DMC2D.Polygon
 
-/// Makes PNG images (movie frames) from world state
+/// Makes PNG images (movie frames) from world state.
 public struct MovieFrame {
     struct ParticleGeom {
         let x: Double

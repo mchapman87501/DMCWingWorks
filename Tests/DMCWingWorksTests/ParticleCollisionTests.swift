@@ -1,7 +1,7 @@
+import DMC2D
 import XCTest
 
 @testable import DMCWingWorks
-import DMC2D
 
 class ParticleCollisionTests: XCTestCase {
     // This is derived from a test case that shows a large change in (linear)

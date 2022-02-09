@@ -1,5 +1,5 @@
-import Foundation
 import DMC2D
+import Foundation
 
 struct ProjExtrema {
     let vMin: Double

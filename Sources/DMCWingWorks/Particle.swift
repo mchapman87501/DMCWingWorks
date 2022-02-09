@@ -1,5 +1,5 @@
-import Foundation
 import DMC2D
+import Foundation
 
 private class ParticleID {
     private static var _nextID = 0
@@ -10,6 +10,7 @@ private class ParticleID {
     }
 }
 
+/// Represents a monoatomic gas particle.
 public class Particle {
     // Particles must be created by a single thread to ensure
     // their IDs are unique, and strictly ordered.
@@ -19,7 +20,9 @@ public class Particle {
     // All particles have the same size and mass
     static let commonRadius: Double = 0.125
 
+    /// Radius of interaction in arbitrary units
     public let radius = Particle.commonRadius
+    /// Particle mass in arbitrary units
     public let mass: Double = 1.0
 
     var s: Vector
@@ -88,6 +91,8 @@ public class Particle {
         s += v
     }
 
+    /// Get the current position.
+    /// - Returns: the particle's current position in arbitrary units
     public func pos() -> Vector {
         return s
     }

@@ -1,8 +1,7 @@
+import DMC2D
 import XCTest
 
 @testable import DMCWingWorks
-
-import DMC2D
 
 typealias Polygon = DMC2D.Polygon
 
@@ -82,8 +81,8 @@ class AirfoilCollisionTests: XCTestCase {
         let pos = Vector(x: xmid, y: ymid)
 
         // Ensure the velocity vector points into the edge.
-        let vel = Vector(x: 0.1, y: 0.0) + (
-            foil.shape.edgeNormals[edgeIndex] * -0.01)
+        let vel =
+            Vector(x: 0.1, y: 0.0) + (foil.shape.edgeNormals[edgeIndex] * -0.01)
         let particle = Particle(s: pos, v: vel)
 
         let vUnit0 = vel.unit()
@@ -206,7 +205,9 @@ class AirfoilCollisionTests: XCTestCase {
     // "push".
 
     // Parameterized test function:
-    private func testPositiveRecoilImpulse(particle: Particle, expectedEdgeIndex: Int?)
+    private func testPositiveRecoilImpulse(
+        particle: Particle, expectedEdgeIndex: Int?
+    )
         throws
     {
         let polygon = exampleFoilShape()

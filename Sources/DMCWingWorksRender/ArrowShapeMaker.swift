@@ -1,7 +1,6 @@
 import AppKit
-import Foundation
-
 import DMC2D
+import Foundation
 
 struct ArrowShapeMaker {
     func getArrowShape(vector: Vector, tailAnchor: Vector, width: Double)
