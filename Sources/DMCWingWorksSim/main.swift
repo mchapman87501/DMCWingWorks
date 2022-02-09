@@ -2,6 +2,7 @@ import DMCWingWorks
 import DMCWingWorksRender
 import Foundation
 
+/// Create and run a simulation, recording its evolution to `movie.mov` in the current working directory.
 func main() {
     let movieWidth = 1280
     let movieHeight = 720
