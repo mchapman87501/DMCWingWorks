@@ -3,7 +3,7 @@ import DMCMovieWriter
 import DMCWingWorks
 import Foundation
 
-/// Creates a movie showing the state of the ``DMCWingWorks/World`` over time.
+/// Create a movie showing the evolving state of a `World` particle simulation.
 public struct WorldWriter {
     let world: World
     let width: Int

@@ -5,7 +5,7 @@ import Foundation
 
 typealias Polygon = DMC2D.Polygon
 
-/// Makes PNG images (movie frames) from world state.
+/// Make images (movie frames) of a `World`.
 public struct MovieFrame {
     struct ParticleGeom {
         let x: Double
@@ -23,6 +23,12 @@ public struct MovieFrame {
     let edgeForces: [Vector]
     let air: [ParticleGeom]
 
+    /// Create a new image (movie frame) generator.
+    /// - Parameters:
+    ///   - world: the world whose state is to be depicted
+    ///   - width: the desired width of generated images, in points
+    ///   - height: the desired height of generated images, in points
+    ///   - title: the title to be displayed in the legend of each image
     public init(world: World, width: Int, height: Int, title: String) {
         // Expedient: assume the world has same aspect ratio as width/height
         imgWidth = Double(width)
@@ -38,6 +44,13 @@ public struct MovieFrame {
         }
     }
 
+    /// Create an image showing the current state of self's `World`.
+    ///
+    /// `alpha` can be used for fade-in/fade-out effects.  A value of 0 results in a solid black, "faded out," image.
+    /// A value of 1 results in a normal, "faded in," depiction of the world.
+    ///
+    /// - Parameter alpha: the opacity of the depiction over a black background
+    /// - Returns: an image depicting the current world state
     public func createFrame(alpha: Double = 1.0) -> NSImage {
         let size = NSSize(width: imgWidth, height: imgHeight)
 
