@@ -1,5 +1,7 @@
 # DMCWingWorks
 
+![Build and test with coverage](https://github.com/mchapman87501/DMCWingWorks/actions/workflows/swift_build_and_test_with_coverage.yml/badge.svg)
+
 ## Overview
 
 This Swift package implements a 2-dimensional gas particle simulation.  It aims to show how, colliding randomly with one another and with an airfoil shape, gas particles can produce lift and drag on an airfoil.
