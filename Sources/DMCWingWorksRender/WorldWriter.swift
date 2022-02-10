@@ -111,7 +111,7 @@ public struct WorldWriter {
         }
     }
 
-    /// Record the current state of the world as a new movie frame.
+    /// Record the current state of the simulation as a new movie frame.
     ///
     /// `alpha` can be used for fade-in/fade-out effects.  A value of 0 produces a black, "faded out," frame.
     /// A value of 1 produces a normal, "faded in," frame.
@@ -125,7 +125,7 @@ public struct WorldWriter {
         }
     }
 
-    /// Get an image showing the current state of the world.
+    /// Get an image showing the current state of the simulation.
     ///
     /// This method is for creating images to be displayed in user interfaces, e.g., to show the
     /// progress of a movie recording.
